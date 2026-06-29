@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { font-size: 14px; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: #F7F9F8;
+    color: #0F1714;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: #C8D9D5; border-radius: 3px; }
+}
+
+@layer components {
+  .font-display { font-family: 'Fraunces', Georgia, serif; }
+  .font-mono-dm { font-family: 'DM Mono', monospace; }
+
+  /* Nota bar */
+  .nota-bar { @apply flex items-center gap-2; }
+  .nota-track { @apply w-12 h-1 bg-field rounded-full overflow-hidden; }
+  .nota-fill { @apply h-full rounded-full; }
+  .nota-fill.alto { @apply bg-accent-md; }
+  .nota-fill.medio { @apply bg-amber; }
+  .nota-fill.baixo { @apply bg-danger; }
+
+  /* Toast */
+  .toast-enter { animation: slideUp 0.25s ease forwards; }
+  .toast-exit { animation: slideDown 0.25s ease forwards; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(8px); }
+}
