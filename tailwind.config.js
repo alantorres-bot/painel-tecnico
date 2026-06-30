@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Fraunces', 'Georgia', 'serif'],
-        sans: ['DM Sans', 'system-ui', 'sans-serif'],
-        mono: ['DM Mono', 'monospace'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         ink: {

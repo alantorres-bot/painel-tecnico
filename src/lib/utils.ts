@@ -75,7 +75,7 @@ export function gerarICS(v: {
   const dt = v.data.replace(/-/g, '')
   const uid = `visita-${dt}-${generateId()}@paineltecnico`
   const ics = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Painel Tecnico//PT//PT',
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Painel Supervisao Tecnica Facholi//PT//PT',
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTART;VALUE=DATE:${dt}`,

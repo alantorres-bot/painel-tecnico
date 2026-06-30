@@ -22,10 +22,10 @@ export function Sidebar({ current, onNav, grsLabel }: Props) {
       {/* Logo */}
       <div className="px-5 py-7 border-b border-white/8">
         <div className="font-mono-dm text-[10px] tracking-widest uppercase text-accent-md mb-1">
-          Supervisão Técnica
+          Facholi
         </div>
-        <h1 className="font-display text-[22px] font-black text-white leading-tight tracking-tight">
-          Painel<br />de Campo
+        <h1 className="font-display text-[20px] font-black text-white leading-tight tracking-tight">
+          Painel de<br />Supervisão Técnica
         </h1>
         <div className="font-mono-dm text-[11px] text-ink-faint mt-1 tracking-wide" id="sl-grs">
           {grsLabel}

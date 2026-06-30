@@ -6,7 +6,7 @@
   * { box-sizing: border-box; }
   html { font-size: 14px; }
   body {
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background: #F7F9F8;
     color: #0F1714;
     -webkit-font-smoothing: antialiased;
@@ -16,8 +16,8 @@
 }
 
 @layer components {
-  .font-display { font-family: 'Fraunces', Georgia, serif; }
-  .font-mono-dm { font-family: 'DM Mono', monospace; }
+  .font-display { font-family: 'Inter', system-ui, sans-serif; }
+  .font-mono-dm { font-family: 'Inter', system-ui, sans-serif; }
 
   /* Nota bar */
   .nota-bar { @apply flex items-center gap-2; }
