@@ -11,6 +11,7 @@ const NAV_ITEMS: { id: PageId; icon: string; label: string; section?: string }[]
   { id: 'relatorios', icon: '📋', label: 'Relatórios' },
   { id: 'mapa', icon: '🗺️', label: 'Mapa de RCs' },
   { id: 'admin', icon: '⚙️', label: 'Administração', section: 'Config.' },
+  { id: 'usuarios', icon: '👥', label: 'Usuários', section: 'Config.' },
 ]
 
 interface Props {
@@ -21,8 +22,12 @@ interface Props {
 
 export function Sidebar({ current, onNav, grsLabel }: Props) {
   const { isGerente } = useProfile()
-  // O gerente é só-leitura: esconde a tela de Administração (escrita).
-  const items = NAV_ITEMS.filter(item => !(item.id === 'admin' && isGerente))
+  // Admin (escrita) só p/ supervisor; Usuários só p/ gerente.
+  const items = NAV_ITEMS.filter(item => {
+    if (item.id === 'admin') return !isGerente
+    if (item.id === 'usuarios') return isGerente
+    return true
+  })
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[248px] bg-ink flex flex-col z-50 border-r border-white/5">
       {/* Logo */}

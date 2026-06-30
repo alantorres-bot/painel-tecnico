@@ -15,6 +15,7 @@ import Clientes from './components/pages/Clientes'
 import Relatorios from './components/pages/Relatorios'
 import Mapa from './components/pages/Mapa'
 import Admin from './components/pages/Admin'
+import Usuarios from './components/pages/Usuarios'
 
 const PAGE_TITLES: Record<PageId, string> = {
   dashboard: 'Dashboard Geral',
@@ -24,6 +25,7 @@ const PAGE_TITLES: Record<PageId, string> = {
   relatorios: 'Relatórios de Visitas',
   mapa: 'Mapa de RCs',
   admin: 'Administração',
+  usuarios: 'Usuários',
 }
 
 export default function App() {
@@ -131,6 +133,7 @@ function Shell() {
             {page === 'relatorios' && <Relatorios store={store} />}
             {page === 'mapa' && <Mapa store={store} />}
             {page === 'admin' && <Admin store={store} />}
+            {page === 'usuarios' && <Usuarios />}
           </div>
         </main>
       </div>

@@ -104,3 +104,4 @@ export type PageId =
   | 'relatorios'
   | 'mapa'
   | 'admin'
+  | 'usuarios'
