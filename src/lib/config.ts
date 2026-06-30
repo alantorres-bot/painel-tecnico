@@ -14,8 +14,8 @@
 //  sem tela de login — exatamente como hoje.
 // ============================================================
 
-export const SUPABASE_URL = ''
-export const SUPABASE_ANON_KEY = ''
+export const SUPABASE_URL = 'https://qywimgregwcygzxvjvnb.supabase.co'
+export const SUPABASE_ANON_KEY = 'sb_publishable_PjDSrZRTL-9vLXNrphIiGw_X0AIwC5q'
 
 /** True quando as credenciais do Supabase foram preenchidas acima. */
 export const isSupabaseEnabled = (): boolean =>

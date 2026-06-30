@@ -60,6 +60,14 @@ function Shell() {
   const showFilters = page === 'dashboard' || page === 'representantes'
   const [grFilter, setGrFilter] = useState('todos')
 
+  if (store.loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface text-ink-light font-mono-dm text-[13px]">
+        Carregando dados…
+      </div>
+    )
+  }
+
   return (
       <div className="flex min-h-screen">
         <Sidebar current={page} onNav={setPage} grsLabel={grsLabel} />

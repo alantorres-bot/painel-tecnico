@@ -62,6 +62,31 @@ export interface AppState {
   clientes: Cliente[]
 }
 
+// Interface comum aos dois backends (localStorage e Supabase).
+// As páginas dependem só disto, então trocar de backend não muda as telas.
+export interface Store {
+  state: AppState
+  loading: boolean
+  addGR: (gr: GR) => void
+  updateGR: (idx: number, gr: GR) => void
+  deleteGR: (idx: number) => void
+  addMT: (mt: MT) => void
+  updateMT: (idx: number, mt: MT) => void
+  deleteMT: (idx: number) => void
+  addRC: (rc: RC) => void
+  updateRC: (idx: number, rc: RC) => void
+  deleteRC: (idx: number) => void
+  toggleFoco: (idx: number) => void
+  importRCs: (rcs: RC[], newGRs: GR[], newMTs: MT[]) => void
+  addVisita: (v: Visita) => void
+  addCliente: (c: Cliente) => void
+  ultimaVisita: (rcIdx: number) => string | null
+  diasSemVisita: (rcIdx: number) => number | null
+  exportBackup: () => void
+  importBackup: (data: AppState) => void
+  resetData: () => void
+}
+
 export type PageId =
   | 'dashboard'
   | 'representantes'

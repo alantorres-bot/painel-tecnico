@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { AppState, GR, MT, RC, Visita, Cliente } from '../types'
+import { AppState, GR, MT, RC, Visita, Cliente, Store } from '../types'
 import { GRS_INICIAL, MTS_INICIAL, RCS_INICIAL } from '../data/initial'
+import { isSupabaseEnabled } from '../lib/config'
+import { useRemoteStore } from './useRemoteStore'
 
 const KEYS = {
   grs: 'pt_grs',
@@ -38,7 +40,7 @@ function saveState(state: AppState) {
   localStorage.setItem(KEYS.clientes, JSON.stringify(state.clientes))
 }
 
-export function useStore() {
+function useLocalStore(): Store {
   const [state, setState] = useState<AppState>(loadState)
 
   useEffect(() => { saveState(state) }, [state])
@@ -129,6 +131,7 @@ export function useStore() {
 
   return {
     state,
+    loading: false,
     addGR, updateGR, deleteGR,
     addMT, updateMT, deleteMT,
     addRC, updateRC, deleteRC, toggleFoco, importRCs,
@@ -139,4 +142,8 @@ export function useStore() {
   }
 }
 
-export type Store = ReturnType<typeof useStore>
+// Escolhe o backend uma única vez (config é constante em build):
+// com Supabase configurado usa o store remoto; senão, o localStorage.
+export const useStore: () => Store = isSupabaseEnabled() ? useRemoteStore : useLocalStore
+
+export type { Store } from '../types'
