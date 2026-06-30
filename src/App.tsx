@@ -3,6 +3,9 @@ import { Sidebar } from './components/layout/Sidebar'
 import { PageId } from './types'
 import { useStore } from './hooks/useStore'
 import { ToastProvider } from './hooks/useToast'
+import { AuthProvider, useAuth } from './hooks/useAuth'
+import { isSupabaseEnabled } from './lib/config'
+import Login from './components/Login'
 import Dashboard from './components/pages/Dashboard'
 import Representantes from './components/pages/Representantes'
 import Agenda from './components/pages/Agenda'
@@ -22,6 +25,35 @@ const PAGE_TITLES: Record<PageId, string> = {
 }
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <ToastProvider>
+        <Gate />
+      </ToastProvider>
+    </AuthProvider>
+  )
+}
+
+// Portão de acesso: só exige login quando o Supabase está configurado.
+// Sem credenciais (config.ts vazio) → vai direto para o app (modo local).
+function Gate() {
+  const { session, loading } = useAuth()
+
+  if (isSupabaseEnabled()) {
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-surface text-ink-light font-mono-dm text-[13px]">
+          Carregando…
+        </div>
+      )
+    }
+    if (!session) return <Login />
+  }
+
+  return <Shell />
+}
+
+function Shell() {
   const [page, setPage] = useState<PageId>('dashboard')
   const store = useStore()
   const grsLabel = store.state.grs.map(g => g.codigo).join(' & ') + ' — BR'
@@ -29,7 +61,6 @@ export default function App() {
   const [grFilter, setGrFilter] = useState('todos')
 
   return (
-    <ToastProvider>
       <div className="flex min-h-screen">
         <Sidebar current={page} onNav={setPage} grsLabel={grsLabel} />
         <main className="ml-[248px] flex-1 flex flex-col min-h-screen">
@@ -69,6 +100,5 @@ export default function App() {
           </div>
         </main>
       </div>
-    </ToastProvider>
   )
 }

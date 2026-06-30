@@ -1,4 +1,6 @@
 import { PageId } from '../../types'
+import { useAuth } from '../../hooks/useAuth'
+import { isSupabaseEnabled } from '../../lib/config'
 
 const NAV_ITEMS: { id: PageId; icon: string; label: string; section?: string }[] = [
   { id: 'dashboard', icon: '📊', label: 'Dashboard', section: 'Principal' },
@@ -60,7 +62,21 @@ export function Sidebar({ current, onNav, grsLabel }: Props) {
       <div className="px-5 py-4 border-t border-white/7">
         <div className="font-mono-dm text-[10px] text-white/25 tracking-wide">Supervisor Técnico</div>
         <div className="text-[12px] text-white/55 font-semibold mt-0.5">Zootecnista</div>
+        <LogoutButton />
       </div>
     </aside>
+  )
+}
+
+function LogoutButton() {
+  const { session, signOut } = useAuth()
+  if (!isSupabaseEnabled() || !session) return null
+  return (
+    <button
+      onClick={() => signOut()}
+      className="mt-3 w-full text-left font-mono-dm text-[11px] tracking-wide text-white/40 hover:text-white/80 transition-colors"
+    >
+      ⎋ Sair{session.user?.email ? ` · ${session.user.email}` : ''}
+    </button>
   )
 }

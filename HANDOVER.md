@@ -74,12 +74,23 @@ Isto coloca os dados na nuvem, com login, acessível de qualquer dispositivo.
    - **anon public key** (uma chave longa — pode ficar no código, é pública de propósito;
      a segurança é feita pelas políticas RLS do banco).
 5. Em **Authentication → Providers → Email**, deixe **Email** ligado. Para uso pessoal,
-   pode **desligar “Confirm email”** (login direto sem confirmação).
-6. Passe a **URL** e a **anon key** para quem for fazer a integração do código (ou peça
-   ao seu Claude Code: “integre o Supabase usando esta URL e esta anon key, trocando o
-   localStorage”). O schema já está pronto em `docs/sql/schema.sql`.
+   pode **desligar “Confirm email”** (login direto sem confirmação). Crie o seu usuário em
+   **Authentication → Users → Add user** (e-mail + senha).
+6. **Cole as credenciais no código:** abra **`src/lib/config.ts`** e preencha:
+   ```ts
+   export const SUPABASE_URL = 'https://xxxx.supabase.co'
+   export const SUPABASE_ANON_KEY = 'sua-anon-key'
+   ```
+   Faça `git push`. **Isso liga a tela de login** automaticamente (o app já está preparado:
+   cliente do Supabase + login + botão Sair).
 
-> Enquanto o Supabase não estiver ligado, o app funciona normalmente em modo local
+> ⚠️ **Etapa final (migração dos dados):** preencher o `config.ts` ativa o **login**, mas
+> a troca da gravação de dados (hoje em localStorage) para o banco Supabase é o último
+> passo e precisa ser feito com o banco já criado — peça ao seu Claude Code:
+> *“migre o useStore para o Supabase usando o schema em docs/sql/schema.sql”*. O schema
+> (tabelas + RLS) já está pronto no repositório.
+
+> Enquanto o `config.ts` estiver vazio, o app funciona normalmente em modo local
 > (localStorage) — e dá para **exportar/importar backup em JSON** na tela
 > **Administração → Dados**.
 
