@@ -98,3 +98,10 @@ create policy "own clientes" on clientes for all using (owner = auth.uid()) with
 
 -- Pronto. As tabelas começam vazias; o app cuida de semear os
 -- GRs/MTs/RCs iniciais (ou importar a planilha) no primeiro login.
+
+-- ============================================================
+-- IMPORTANTE: depois deste schema, rode também **docs/sql/roles.sql**.
+-- Ele adiciona papéis (supervisor/gerente) e TROCA as policies acima
+-- por: gerente LÊ tudo, só o dono ESCREVE. Sem o roles.sql, o app
+-- funciona em modo monousuário (cada um só vê o próprio dado).
+-- ============================================================
