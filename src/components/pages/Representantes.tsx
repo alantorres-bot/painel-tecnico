@@ -101,7 +101,9 @@ export default function Representantes({ store, grFilter }: Props) {
         footer={
           <>
             <Btn variant="ghost" onClick={() => setDetailIdx(null)}>Fechar</Btn>
-            <Btn variant="primary" onClick={() => { setVisitaFor(detailIdx); }}>Registrar visita</Btn>
+            {!store.readOnly && (
+              <Btn variant="primary" onClick={() => { setVisitaFor(detailIdx); }}>Registrar visita</Btn>
+            )}
           </>
         }
       >

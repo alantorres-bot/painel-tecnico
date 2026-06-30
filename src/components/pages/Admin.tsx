@@ -343,14 +343,20 @@ function AbaDados({ store }: { store: Store }) {
         </div>
 
         <div className={cardCls}>
+          <h3 className="font-display text-[15px] font-bold text-ink mb-1">Base inicial (37 RCs)</h3>
+          <p className="text-[12px] text-ink-light mb-3">Carrega a base de exemplo dos 37 RCs (GR6/GR7). Use só se quiser partir dessa base — o normal é importar a sua planilha.</p>
+          <Btn variant="secondary" onClick={() => { store.seedInicial(); toast('Carregando base inicial…') }}>Carregar base inicial</Btn>
+        </div>
+
+        <div className={cardCls}>
           <h3 className="font-display text-[15px] font-bold text-ink mb-1">Versão limpa</h3>
           <p className="text-[12px] text-ink-light mb-3">Baixe um arquivo sem dados (mantém GRs/MTs) para compartilhar com outro técnico.</p>
           <Btn variant="secondary" onClick={versaoLimpa}>Baixar versão limpa</Btn>
         </div>
 
         <div className={cardCls}>
-          <h3 className="font-display text-[15px] font-bold text-ink mb-1">Resetar dados</h3>
-          <p className="text-[12px] text-ink-light mb-3">Restaura os 37 RCs originais da planilha e apaga visitas/clientes.</p>
+          <h3 className="font-display text-[15px] font-bold text-ink mb-1">Resetar (apagar tudo)</h3>
+          <p className="text-[12px] text-ink-light mb-3">Apaga TODOS os dados (RCs, visitas, clientes), deixando a base vazia.</p>
           <Btn variant="danger" onClick={() => setConfirmReset(true)}>Resetar</Btn>
         </div>
       </div>
@@ -392,7 +398,7 @@ function AbaDados({ store }: { store: Store }) {
           <Btn variant="ghost" onClick={() => setConfirmReset(false)}>Cancelar</Btn>
           <Btn variant="danger" onClick={() => { store.resetData(); setConfirmReset(false); toast('Dados resetados ✓') }}>Sim, resetar</Btn>
         </>}>
-        <p className="text-[13px] text-ink-mid">Isso apaga todas as visitas e clientes cadastrados e restaura os 37 RCs originais. Esta ação não pode ser desfeita.</p>
+        <p className="text-[13px] text-ink-mid">Isso apaga TODOS os dados (RCs, visitas e clientes), deixando a base vazia. Esta ação não pode ser desfeita.</p>
       </Modal>
     </div>
   )

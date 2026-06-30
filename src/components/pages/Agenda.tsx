@@ -80,7 +80,7 @@ export default function Agenda({ store }: Props) {
             return (
               <button
                 key={dia}
-                onClick={() => setVisitaDate(isoDia)}
+                onClick={() => { if (!store.readOnly) setVisitaDate(isoDia) }}
                 className={`aspect-square rounded-[8px] border flex flex-col items-center justify-center text-[13px] transition-all cursor-pointer relative ${
                   ehHoje ? 'border-accent-md bg-accent-lt/50 font-bold text-accent' : 'border-border hover:border-accent-md hover:bg-surface text-ink-mid'
                 }`}

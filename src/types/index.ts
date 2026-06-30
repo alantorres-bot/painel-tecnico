@@ -62,11 +62,19 @@ export interface AppState {
   clientes: Cliente[]
 }
 
+// Opções de modo do store (usadas pelo gerente para ver dados de terceiros).
+export interface StoreOpts {
+  mode?: 'own' | 'gerente-all' | 'gerente-one'
+  ownerId?: string | null
+  readOnly?: boolean
+}
+
 // Interface comum aos dois backends (localStorage e Supabase).
 // As páginas dependem só disto, então trocar de backend não muda as telas.
 export interface Store {
   state: AppState
   loading: boolean
+  readOnly: boolean
   addGR: (gr: GR) => void
   updateGR: (idx: number, gr: GR) => void
   deleteGR: (idx: number) => void
@@ -78,6 +86,7 @@ export interface Store {
   deleteRC: (idx: number) => void
   toggleFoco: (idx: number) => void
   importRCs: (rcs: RC[], newGRs: GR[], newMTs: MT[]) => void
+  seedInicial: () => void
   addVisita: (v: Visita) => void
   addCliente: (c: Cliente) => void
   ultimaVisita: (rcIdx: number) => string | null

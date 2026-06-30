@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Sidebar } from './components/layout/Sidebar'
-import { PageId } from './types'
+import { SupervisorSwitcher } from './components/layout/SupervisorSwitcher'
+import { PageId, StoreOpts } from './types'
 import { useStore } from './hooks/useStore'
 import { ToastProvider } from './hooks/useToast'
 import { AuthProvider, useAuth } from './hooks/useAuth'
+import { ProfileProvider, useProfile } from './hooks/useProfile'
 import { isSupabaseEnabled } from './lib/config'
 import Login from './components/Login'
 import Dashboard from './components/pages/Dashboard'
@@ -27,27 +29,31 @@ const PAGE_TITLES: Record<PageId, string> = {
 export default function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
-        <Gate />
-      </ToastProvider>
+      <ProfileProvider>
+        <ToastProvider>
+          <Gate />
+        </ToastProvider>
+      </ProfileProvider>
     </AuthProvider>
   )
 }
 
+const Loading = () => (
+  <div className="min-h-screen flex items-center justify-center bg-surface text-ink-light font-mono-dm text-[13px]">
+    Carregando…
+  </div>
+)
+
 // Portão de acesso: só exige login quando o Supabase está configurado.
 // Sem credenciais (config.ts vazio) → vai direto para o app (modo local).
 function Gate() {
-  const { session, loading } = useAuth()
+  const { session, loading: authLoading } = useAuth()
+  const { loading: profLoading } = useProfile()
 
   if (isSupabaseEnabled()) {
-    if (loading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-surface text-ink-light font-mono-dm text-[13px]">
-          Carregando…
-        </div>
-      )
-    }
+    if (authLoading) return <Loading />
     if (!session) return <Login />
+    if (profLoading) return <Loading />
   }
 
   return <Shell />
@@ -55,7 +61,17 @@ function Gate() {
 
 function Shell() {
   const [page, setPage] = useState<PageId>('dashboard')
-  const store = useStore()
+  const { isGerente } = useProfile()
+  // No modo gerente: 'all' = visão nacional; senão = owner do supervisor selecionado.
+  const [selectedSupervisor, setSelectedSupervisor] = useState<string>('all')
+  const storeOpts: StoreOpts = isGerente
+    ? {
+        mode: selectedSupervisor === 'all' ? 'gerente-all' : 'gerente-one',
+        ownerId: selectedSupervisor === 'all' ? null : selectedSupervisor,
+        readOnly: true,
+      }
+    : {}
+  const store = useStore(storeOpts)
   const grsLabel = store.state.grs.map(g => g.codigo).join(' & ') + ' — BR'
   const showFilters = page === 'dashboard' || page === 'representantes'
   const [grFilter, setGrFilter] = useState('todos')
@@ -77,23 +93,33 @@ function Shell() {
             <h2 className="font-display text-[17px] font-bold text-ink tracking-tight">
               {PAGE_TITLES[page]}
             </h2>
-            {showFilters && (
-              <div className="flex gap-1.5">
-                {['todos', ...store.state.grs.map(g => g.codigo)].map(gr => (
-                  <button
-                    key={gr}
-                    onClick={() => setGrFilter(gr)}
-                    className={`px-3.5 py-1.5 rounded-full border text-[12px] font-mono-dm tracking-wide transition-all cursor-pointer ${
-                      grFilter === gr
-                        ? 'bg-ink text-white border-ink'
-                        : 'bg-card text-ink-mid border-border-md hover:bg-ink hover:text-white hover:border-ink'
-                    }`}
-                  >
-                    {gr === 'todos' ? 'Todas GRs' : gr}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              {isGerente && (
+                <>
+                  <span className="px-2.5 py-1 rounded-full bg-amber-lt text-amber text-[10.5px] font-mono-dm font-semibold tracking-wide whitespace-nowrap">
+                    GERENTE · somente leitura
+                  </span>
+                  <SupervisorSwitcher value={selectedSupervisor} onChange={setSelectedSupervisor} />
+                </>
+              )}
+              {showFilters && (
+                <div className="flex gap-1.5">
+                  {['todos', ...Array.from(new Set(store.state.grs.map(g => g.codigo)))].map(gr => (
+                    <button
+                      key={gr}
+                      onClick={() => setGrFilter(gr)}
+                      className={`px-3.5 py-1.5 rounded-full border text-[12px] font-mono-dm tracking-wide transition-all cursor-pointer ${
+                        grFilter === gr
+                          ? 'bg-ink text-white border-ink'
+                          : 'bg-card text-ink-mid border-border-md hover:bg-ink hover:text-white hover:border-ink'
+                      }`}
+                    >
+                      {gr === 'todos' ? 'Todas GRs' : gr}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Page content */}

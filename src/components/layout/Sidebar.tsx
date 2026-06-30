@@ -1,5 +1,6 @@
 import { PageId } from '../../types'
 import { useAuth } from '../../hooks/useAuth'
+import { useProfile } from '../../hooks/useProfile'
 import { isSupabaseEnabled } from '../../lib/config'
 
 const NAV_ITEMS: { id: PageId; icon: string; label: string; section?: string }[] = [
@@ -19,6 +20,9 @@ interface Props {
 }
 
 export function Sidebar({ current, onNav, grsLabel }: Props) {
+  const { isGerente } = useProfile()
+  // O gerente é só-leitura: esconde a tela de Administração (escrita).
+  const items = NAV_ITEMS.filter(item => !(item.id === 'admin' && isGerente))
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[248px] bg-ink flex flex-col z-50 border-r border-white/5">
       {/* Logo */}
@@ -36,7 +40,7 @@ export function Sidebar({ current, onNav, grsLabel }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 py-3 overflow-y-auto">
-        {NAV_ITEMS.map((item, i) => (
+        {items.map((item, i) => (
           <div key={item.id}>
             {item.section && (
               <div className="font-mono-dm text-[9.5px] tracking-widest uppercase text-white/20 px-5 pt-4 pb-1">
@@ -60,11 +64,21 @@ export function Sidebar({ current, onNav, grsLabel }: Props) {
 
       {/* Footer */}
       <div className="px-5 py-4 border-t border-white/7">
-        <div className="font-mono-dm text-[10px] text-white/25 tracking-wide">Supervisor Técnico</div>
-        <div className="text-[12px] text-white/55 font-semibold mt-0.5">Zootecnista</div>
+        <FooterIdentity />
         <LogoutButton />
       </div>
     </aside>
+  )
+}
+
+function FooterIdentity() {
+  const { role, nome } = useProfile()
+  const label = role === 'gerente' ? 'Gerente-Geral Nacional' : 'Supervisor Técnico'
+  return (
+    <>
+      <div className="font-mono-dm text-[10px] text-white/25 tracking-wide">{label}</div>
+      <div className="text-[12px] text-white/55 font-semibold mt-0.5">{nome || 'Zootecnista'}</div>
+    </>
   )
 }
 

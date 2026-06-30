@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { AppState, GR, MT, RC, Visita, Cliente, Store } from '../types'
+import { AppState, GR, MT, RC, Visita, Cliente, Store, StoreOpts } from '../types'
 import { GRS_INICIAL, MTS_INICIAL, RCS_INICIAL } from '../data/initial'
 import { supabase } from '../lib/supabase'
 
@@ -27,8 +27,11 @@ const clienteToRow = (c: Cliente, rcId: string | null) => ({
   pot: c.pot, cidade: c.cidade, obs: c.obs, ultimo_contato: c.ultimoContato || null,
 })
 
-export function useRemoteStore(): Store {
+export function useRemoteStore(opts: StoreOpts = {}): Store {
   const sb = supabase!
+  const mode = opts.mode ?? 'own'
+  const ownerId = opts.ownerId ?? null
+  const readOnly = opts.readOnly ?? false
   const [state, setState] = useState<AppState>(EMPTY)
   const [loading, setLoading] = useState(true)
   // ids do banco alinhados com os índices dos arrays do state (grs/mts/rcs)
@@ -40,20 +43,23 @@ export function useRemoteStore(): Store {
     await sb.from('rcs').insert(RCS_INICIAL.map(rcToRow))
   }, [sb])
 
-  const loadAll = useCallback(async (allowSeed = true) => {
+  const loadAll = useCallback(async () => {
+    setLoading(true)
+    // No modo gerente-one filtramos por owner; nos demais a RLS já decide
+    // (supervisor = só os próprios; gerente-all = todos).
+    const sel = (table: string, orderCol: string) => {
+      let q = sb.from(table).select('*')
+      if (mode === 'gerente-one' && ownerId) q = q.eq('owner', ownerId)
+      return q.order(orderCol)
+    }
     const [g, m, r, v, c] = await Promise.all([
-      sb.from('grs').select('*').order('created_at'),
-      sb.from('mts').select('*').order('created_at'),
-      sb.from('rcs').select('*').order('created_at'),
-      sb.from('visitas').select('*').order('data'),
-      sb.from('clientes').select('*').order('created_at'),
+      sel('grs', 'created_at'),
+      sel('mts', 'created_at'),
+      sel('rcs', 'created_at'),
+      sel('visitas', 'data'),
+      sel('clientes', 'created_at'),
     ])
     const gr = g.data ?? [], mt = m.data ?? [], rc = r.data ?? []
-    // primeiro login: banco vazio → semeia e recarrega
-    if (allowSeed && gr.length === 0 && rc.length === 0) {
-      await seed()
-      return loadAll(false)
-    }
     ids.current = { grs: gr.map(x => x.id), mts: mt.map(x => x.id), rcs: rc.map(x => x.id) }
     const rcIndexById = new Map<string, number>(rc.map((x, i) => [x.id, i]))
     const idxOf = (rcId: string | null) => (rcId != null ? rcIndexById.get(rcId) ?? null : null)
@@ -76,23 +82,33 @@ export function useRemoteStore(): Store {
       })),
     })
     setLoading(false)
-  }, [sb, seed])
+  }, [sb, mode, ownerId])
 
   useEffect(() => { loadAll().catch(e => { console.error(e); setLoading(false) }) }, [loadAll])
 
   const err = (e: unknown) => { if (e) console.error('[supabase]', e) }
 
+  // Semeia a base inicial (37 RCs) — opt-in, só faz sentido no modo próprio.
+  const seedInicial = () => {
+    if (readOnly || mode !== 'own') return
+    setLoading(true)
+    seed().then(() => loadAll()).catch(err)
+  }
+
   // ── GRs ──────────────────────────────────────────────────
   const addGR = (gr: GR) => {
+    if (readOnly) return
     setState(s => ({ ...s, grs: [...s.grs, gr] }))
     sb.from('grs').insert({ codigo: gr.codigo, nome: gr.nome }).select().single()
       .then(({ data, error }) => { err(error); if (data) ids.current.grs.push(data.id) })
   }
   const updateGR = (idx: number, gr: GR) => {
+    if (readOnly) return
     setState(s => { const grs = [...s.grs]; grs[idx] = gr; return { ...s, grs } })
     sb.from('grs').update({ codigo: gr.codigo, nome: gr.nome }).eq('id', ids.current.grs[idx]).then(({ error }) => err(error))
   }
   const deleteGR = (idx: number) => {
+    if (readOnly) return
     const id = ids.current.grs[idx]
     setState(s => ({ ...s, grs: s.grs.filter((_, i) => i !== idx) }))
     ids.current.grs.splice(idx, 1)
@@ -101,15 +117,18 @@ export function useRemoteStore(): Store {
 
   // ── MTs ──────────────────────────────────────────────────
   const addMT = (mt: MT) => {
+    if (readOnly) return
     setState(s => ({ ...s, mts: [...s.mts, mt] }))
     sb.from('mts').insert({ gr: mt.gr, codigo: mt.codigo, nome: mt.nome }).select().single()
       .then(({ data, error }) => { err(error); if (data) ids.current.mts.push(data.id) })
   }
   const updateMT = (idx: number, mt: MT) => {
+    if (readOnly) return
     setState(s => { const mts = [...s.mts]; mts[idx] = mt; return { ...s, mts } })
     sb.from('mts').update({ gr: mt.gr, codigo: mt.codigo, nome: mt.nome }).eq('id', ids.current.mts[idx]).then(({ error }) => err(error))
   }
   const deleteMT = (idx: number) => {
+    if (readOnly) return
     const id = ids.current.mts[idx]
     setState(s => ({ ...s, mts: s.mts.filter((_, i) => i !== idx) }))
     ids.current.mts.splice(idx, 1)
@@ -118,19 +137,23 @@ export function useRemoteStore(): Store {
 
   // ── RCs ──────────────────────────────────────────────────
   const addRC = (rc: RC) => {
+    if (readOnly) return
     setState(s => ({ ...s, rcs: [...s.rcs, rc] }))
     sb.from('rcs').insert(rcToRow(rc)).select().single()
       .then(({ data, error }) => { err(error); if (data) ids.current.rcs.push(data.id) })
   }
   const updateRC = (idx: number, rc: RC) => {
+    if (readOnly) return
     setState(s => { const rcs = [...s.rcs]; rcs[idx] = rc; return { ...s, rcs } })
     sb.from('rcs').update(rcToRow(rc)).eq('id', ids.current.rcs[idx]).then(({ error }) => err(error))
   }
   const deleteRC = (idx: number) => {
+    if (readOnly) return
     const id = ids.current.rcs[idx]
-    sb.from('rcs').delete().eq('id', id).then(({ error }) => { err(error); loadAll(false).catch(err) })
+    sb.from('rcs').delete().eq('id', id).then(({ error }) => { err(error); loadAll().catch(err) })
   }
   const toggleFoco = (idx: number) => {
+    if (readOnly) return
     let novo = false
     setState(s => {
       const rcs = [...s.rcs]; novo = !rcs[idx].foco; rcs[idx] = { ...rcs[idx], foco: novo }; return { ...s, rcs }
@@ -138,22 +161,25 @@ export function useRemoteStore(): Store {
     sb.from('rcs').update({ foco: novo }).eq('id', ids.current.rcs[idx]).then(({ error }) => err(error))
   }
   const importRCs = async (rcs: RC[], newGRs: GR[], newMTs: MT[]) => {
+    if (readOnly) return
     const grsFaltando = newGRs.filter(g => !state.grs.find(x => x.codigo === g.codigo))
     const mtsFaltando = newMTs.filter(m => !state.mts.find(x => x.gr === m.gr && x.codigo === m.codigo))
     if (grsFaltando.length) err((await sb.from('grs').insert(grsFaltando.map(g => ({ codigo: g.codigo, nome: g.nome })))).error)
     if (mtsFaltando.length) err((await sb.from('mts').insert(mtsFaltando.map(m => ({ gr: m.gr, codigo: m.codigo, nome: m.nome })))).error)
     err((await sb.from('rcs').delete().gte('created_at', '1900-01-01')).error)
     err((await sb.from('rcs').insert(rcs.map(rcToRow))).error)
-    await loadAll(false)
+    await loadAll()
   }
 
   // ── Visitas / Clientes (apenas inserção no app) ──────────
   const addVisita = (v: Visita) => {
+    if (readOnly) return
     const rcId = v.rcIdx != null ? ids.current.rcs[v.rcIdx] ?? null : null
     setState(s => ({ ...s, visitas: [...s.visitas, v] }))
     sb.from('visitas').insert(visitaToRow(v, rcId)).then(({ error }) => err(error))
   }
   const addCliente = (c: Cliente) => {
+    if (readOnly) return
     const rcId = c.rcIdx != null ? ids.current.rcs[c.rcIdx] ?? null : null
     setState(s => ({ ...s, clientes: [...s.clientes, c] }))
     sb.from('clientes').insert(clienteToRow(c, rcId)).then(({ error }) => err(error))
@@ -187,6 +213,7 @@ export function useRemoteStore(): Store {
   }
 
   const importBackup = async (data: AppState) => {
+    if (readOnly) return
     setLoading(true)
     await wipeAll()
     if (data.grs.length) err((await sb.from('grs').insert(data.grs.map(g => ({ codigo: g.codigo, nome: g.nome })))).error)
@@ -199,20 +226,22 @@ export function useRemoteStore(): Store {
     const cliRows = data.clientes.map(c => clienteToRow(c, c.rcIdx != null ? rcIds[c.rcIdx] ?? null : null))
     if (visRows.length) err((await sb.from('visitas').insert(visRows)).error)
     if (cliRows.length) err((await sb.from('clientes').insert(cliRows)).error)
-    await loadAll(false)
+    await loadAll()
   }
 
+  // "Resetar" agora deixa a base VAZIA (o seed dos 37 RCs é opt-in via seedInicial).
   const resetData = async () => {
+    if (readOnly) return
     setLoading(true)
     await wipeAll()
-    await loadAll() // banco vazio → seed automático
+    await loadAll()
   }
 
   return {
-    state, loading,
+    state, loading, readOnly,
     addGR, updateGR, deleteGR,
     addMT, updateMT, deleteMT,
-    addRC, updateRC, deleteRC, toggleFoco, importRCs,
+    addRC, updateRC, deleteRC, toggleFoco, importRCs, seedInicial,
     addVisita, addCliente,
     ultimaVisita, diasSemVisita,
     exportBackup, importBackup, resetData,

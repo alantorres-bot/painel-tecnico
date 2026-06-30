@@ -37,7 +37,7 @@ export default function Clientes({ store }: Props) {
   return (
     <div>
       <SectionHeader title="Clientes / Rebanho">
-        <Btn variant="primary" size="sm" onClick={abrir}>+ Novo cliente</Btn>
+        {!store.readOnly && <Btn variant="primary" size="sm" onClick={abrir}>+ Novo cliente</Btn>}
       </SectionHeader>
 
       <Table headers={['Nome', 'MT', 'RC vinculado', 'Tipo', 'Rebanho', 'Potencial', 'Cidade', 'Últ. contato']} empty={store.state.clientes.length === 0}>
