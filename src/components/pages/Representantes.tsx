@@ -130,7 +130,7 @@ export default function Representantes({ store, grFilter }: Props) {
 
             <div className="font-mono-dm text-[10px] tracking-widest uppercase text-ink-light mb-2">Histórico de visitas</div>
             {historico.length === 0 ? (
-              <EmptyState icon="📭" title="Nenhuma visita registrada" description="Use o botão abaixo para registrar a primeira." />
+              <EmptyState icon="📭" title="Nenhuma visita registrada" description={store.readOnly ? undefined : 'Use o botão abaixo para registrar a primeira.'} />
             ) : (
               <div className="space-y-2">
                 {historico.map(v => (

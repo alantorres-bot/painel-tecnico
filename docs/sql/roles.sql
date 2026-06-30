@@ -71,7 +71,10 @@ security definer
 set search_path = public
 as $$
 begin
-  if new.role is distinct from old.role and not public.is_gerente() then
+  -- Só bloqueia usuários autenticados no app (auth.uid() preenchido) que NÃO
+  -- sejam gerentes. Contexto admin (SQL editor / service_role) tem auth.uid()
+  -- nulo e é liberado — necessário p/ o bootstrap do 1º gerente.
+  if new.role is distinct from old.role and auth.uid() is not null and not public.is_gerente() then
     raise exception 'Apenas gerentes podem alterar o papel de um usuário.';
   end if;
   return new;
