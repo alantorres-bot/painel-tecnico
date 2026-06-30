@@ -19,6 +19,9 @@ create table if not exists profiles (
   created_at timestamptz default now()
 );
 
+-- Coluna p/ "desativar sem apagar" (bloqueia login, preserva dados)
+alter table profiles add column if not exists ativo boolean not null default true;
+
 alter table profiles enable row level security;
 
 -- ---------- Função anti-recursão p/ usar nas policies ----------
