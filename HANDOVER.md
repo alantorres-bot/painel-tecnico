@@ -5,10 +5,11 @@ Este guia é para quem vai **usar e manter** o app por conta própria.
 - **Site no ar:** https://alantorres-bot.github.io/painel-tecnico/
 - **Código (GitHub):** https://github.com/alantorres-bot/painel-tecnico
 - **Tecnologia:** React + TypeScript + Vite + Tailwind. Mapa em Leaflet.
+- **Banco:** Supabase (nuvem) — **já ativo**. Login por e‑mail/senha; dados isolados por usuário.
 
-> Hoje os dados ficam só no navegador (localStorage). A seção **“Banco de dados na
-> nuvem (Supabase)”** abaixo explica como ativar o banco para não perder dados e usar
-> em qualquer aparelho.
+> ✅ O banco na nuvem **já está ligado** (projeto Supabase `qywimgregwcygzxvjvnb`, na conta
+> dhonesandrade2@gmail.com). Os dados ficam na nuvem e aparecem em qualquer aparelho após
+> login. A seção 4 explica como **criar novos usuários** e gerenciar o banco.
 
 ---
 
@@ -59,40 +60,31 @@ Escolha um dos caminhos com o Alan:
 
 ---
 
-## 4. Banco de dados na nuvem (Supabase) — para não perder dados
+## 4. Banco de dados na nuvem (Supabase) — JÁ ATIVO
 
-Isto coloca os dados na nuvem, com login, acessível de qualquer dispositivo.
-**Você (dono) cria o projeto na sua conta**, assim os dados são seus.
+O banco já está ligado: projeto **`qywimgregwcygzxvjvnb`** na conta
+**dhonesandrade2@gmail.com** (https://supabase.com). Os dados ficam na nuvem, isolados por
+usuário (RLS), e cada pessoa só vê os próprios. As credenciais públicas estão em
+`src/lib/config.ts` (a *publishable key* é pública de propósito — a segurança é o RLS).
 
-1. Crie conta em **https://supabase.com** (tem plano grátis).
-2. **New project** → escolha um nome e uma senha de banco → região
-   **South America (São Paulo)**.
-3. Quando abrir, vá em **SQL Editor → New query**, cole TODO o conteúdo de
-   **`docs/sql/schema.sql`** (está neste repositório) e clique **Run**.
-4. Vá em **Project Settings → API** e copie:
-   - **Project URL** (algo como `https://xxxx.supabase.co`)
-   - **anon public key** (uma chave longa — pode ficar no código, é pública de propósito;
-     a segurança é feita pelas políticas RLS do banco).
-5. Em **Authentication → Providers → Email**, deixe **Email** ligado. Para uso pessoal,
-   pode **desligar “Confirm email”** (login direto sem confirmação). Crie o seu usuário em
-   **Authentication → Users → Add user** (e-mail + senha).
-6. **Cole as credenciais no código:** abra **`src/lib/config.ts`** e preencha:
-   ```ts
-   export const SUPABASE_URL = 'https://xxxx.supabase.co'
-   export const SUPABASE_ANON_KEY = 'sua-anon-key'
-   ```
-   Faça `git push`. **Isso liga a tela de login** automaticamente (o app já está preparado:
-   cliente do Supabase + login + botão Sair).
+**Como criar acesso para mais alguém usar o app:**
+1. Entre no Supabase → projeto → **Authentication → Users → Add user → Create new user**.
+2. Informe e‑mail + senha e deixe **“Auto confirm user”** marcado. Pronto — essa pessoa já
+   entra no app com esse login (e terá os dados dela, separados).
 
-> ⚠️ **Etapa final (migração dos dados):** preencher o `config.ts` ativa o **login**, mas
-> a troca da gravação de dados (hoje em localStorage) para o banco Supabase é o último
-> passo e precisa ser feito com o banco já criado — peça ao seu Claude Code:
-> *“migre o useStore para o Supabase usando o schema em docs/sql/schema.sql”*. O schema
-> (tabelas + RLS) já está pronto no repositório.
+> 🔒 O **cadastro público está desligado** (Authentication → Sign In / Providers → “Allow new
+> users to sign up” = off). Ou seja, ninguém cria conta sozinho pela URL — só você cria
+> usuários pelo painel do Supabase. Para reativar o cadastro aberto, é só religar o toggle.
 
-> Enquanto o `config.ts` estiver vazio, o app funciona normalmente em modo local
-> (localStorage) — e dá para **exportar/importar backup em JSON** na tela
-> **Administração → Dados**.
+**Estrutura do banco:** está em `docs/sql/schema.sql` (tabelas grs/mts/rcs/visitas/clientes
++ RLS). Se um dia recriar o banco do zero, rode esse SQL no **SQL Editor**.
+
+**Trocar para a conta Supabase de outra pessoa (transferência):** crie o projeto na conta
+nova, rode `docs/sql/schema.sql`, e troque a URL + a *publishable key* em `src/lib/config.ts`
+→ `git push`. (Ou peça ao seu Claude Code.)
+
+> Backup manual a qualquer momento: **Administração → Dados → Exportar Backup (JSON)** —
+> e dá para restaurar com **Importar Backup**.
 
 ---
 
