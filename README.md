@@ -2,6 +2,15 @@
 
 Sistema de gestão de visitas técnicas para supervisores zootecnistas.
 
+## 🔗 Acesso online
+
+**https://alantorres-bot.github.io/painel-tecnico/**
+
+O app roda 100% no navegador e guarda os dados localmente (localStorage) em cada
+dispositivo. Para começar do zero na sua região, vá em **Administração → Dados →
+Importar Excel** e suba a sua planilha. O deploy é automático: cada `git push` na
+branch `main` reconstrói e republica o site (GitHub Actions → GitHub Pages).
+
 ## Stack
 
 - **React 18** + **TypeScript**
